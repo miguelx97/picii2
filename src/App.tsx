@@ -36,7 +36,6 @@ function App() {
 
   // Update refs when functions change
   useEffect(() => {
-    console.log("Updating functions");
     functionsRef.current = {
       nextImage,
       previousImage,
