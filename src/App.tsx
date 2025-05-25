@@ -1,43 +1,12 @@
-import { useState, useEffect } from "react";
+import { useImages } from "./hooks/useImages";
 
 function App() {
-  const imagesPath = "C:\\Users\\migue\\Downloads\\test\\images";
-  const [images, setImages] = useState<string[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const imagesFolderPath = "C:\\Users\\migue\\Downloads\\test\\images";
+  const { images, selectedImage, error, handleImageSelect } =
+    useImages(imagesFolderPath);
 
-  useEffect(() => {
-    const selectImage = (image: string) => {
-      const imagePath = formatImagePath(imagesPath + "\\" + image);
-      setSelectedImage(imagePath);
-    };
-
-    const loadImages = async () => {
-      try {
-        const imageFiles = await window.ipcRenderer.invoke(
-          "get-images",
-          imagesPath
-        );
-        setImages(imageFiles);
-        selectImage(imageFiles[0]);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load images. Please check the directory path.");
-        console.error("Error loading images:", err);
-      }
-    };
-
-    loadImages();
-  }, [imagesPath]);
-
-  const formatImagePath = (path: string) => {
-    // Convert Windows path to URL format
-    return `file:///${path.replace(/\\/g, "/")}`;
-  };
-
-  const handleImageSelect = (image: string) => {
-    const imagePath = formatImagePath(imagesPath + "\\" + image);
-    setSelectedImage(imagePath);
+  const getImagePath = (path: string, image: string) => {
+    return `file:///${path.replace(/\\/g, "/")}/${image}`;
   };
 
   return (
@@ -56,8 +25,8 @@ function App() {
             images.map((image, index) => (
               <div
                 key={index}
-                className={`p-2 cursor-pointer hover:bg-gray-100 rounded-lg ${
-                  selectedImage === image ? "bg-blue-100" : ""
+                className={`p-2 cursor-pointer hover:bg-gray-200 rounded-lg ${
+                  selectedImage === image ? "bg-gray-100" : ""
                 }`}
                 onClick={() => handleImageSelect(image)}
               >
@@ -73,7 +42,7 @@ function App() {
         {selectedImage ? (
           <div className="h-full flex items-center justify-center">
             <img
-              src={selectedImage}
+              src={getImagePath(imagesFolderPath, selectedImage)}
               alt="Selected"
               className="max-h-full max-w-full object-contain rounded-lg shadow-lg"
             />
