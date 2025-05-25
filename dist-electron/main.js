@@ -1,20 +1,38 @@
-import { app, BrowserWindow } from "electron";
-import { createRequire } from "node:module";
+import { ipcMain, app, BrowserWindow } from "electron";
 import { fileURLToPath } from "node:url";
-import path from "node:path";
-createRequire(import.meta.url);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname, "..");
+import path$1 from "node:path";
+import fs from "fs";
+import path from "path";
+const getImages = async (dirPath) => {
+  try {
+    const files = await fs.promises.readdir(dirPath);
+    const imageFiles = files.filter((file) => {
+      const ext = path.extname(file).toLowerCase();
+      return [".jpg", ".jpeg"].includes(ext);
+    });
+    return imageFiles;
+  } catch (error) {
+    console.error("Error reading directory:", error);
+    throw error;
+  }
+};
+ipcMain.handle("get-images", async (_, dirPath) => {
+  return getImages(dirPath);
+});
+const __dirname = path$1.dirname(fileURLToPath(import.meta.url));
+process.env.APP_ROOT = path$1.join(__dirname, "..");
 const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
+const MAIN_DIST = path$1.join(process.env.APP_ROOT, "dist-electron");
+const RENDERER_DIST = path$1.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path$1.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
 let win;
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    icon: path$1.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     webPreferences: {
-      preload: path.join(__dirname, "preload.mjs")
+      preload: path$1.join(__dirname, "preload.mjs"),
+      webSecurity: false
+      // Allow loading local files
     }
   });
   win.webContents.on("did-finish-load", () => {
@@ -23,7 +41,7 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
+    win.loadFile(path$1.join(RENDERER_DIST, "index.html"));
   }
 }
 app.on("window-all-closed", () => {
