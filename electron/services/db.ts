@@ -10,25 +10,15 @@ class ImageDatabase {
             filename: path.join(process.cwd(), 'data', 'images.db'),
             autoload: true
         });
+        console.log('Database loaded', path.join(process.cwd(), 'data', 'images.db'));
     }
 
-    // Save a new image
-    async saveImage(image: Image): Promise<Image> {
-        return new Promise((resolve, reject) => {
-            this.db.insert(image, (err: Error | null, newDoc: Image) => {
-                if (err) reject(err);
-                resolve(newDoc);
-            });
-        });
-    }
-
-    // Update an existing image
-    async updateImage(name: string, update: Partial<Image>): Promise<Image> {
+    async upsertImage(image: Image): Promise<Image> {
         return new Promise((resolve, reject) => {
             this.db.update(
-                { name },
-                { $set: update },
-                { returnUpdatedDocs: true },
+                { name: image.name },
+                image,
+                { upsert: true, returnUpdatedDocs: true },
                 (err: Error | null, numAffected: number, affectedDocuments: Image) => {
                     if (err) reject(err);
                     resolve(affectedDocuments);
@@ -39,6 +29,11 @@ class ImageDatabase {
 
     // Delete an image by name
     async deleteImage(name: string): Promise<number> {
+        const image = await this.findImageByName(name);
+        if (!image) {
+            return 0;
+        }
+
         return new Promise((resolve, reject) => {
             this.db.remove({ name }, {}, (err: Error | null, n: number) => {
                 if (err) reject(err);
@@ -66,6 +61,31 @@ class ImageDatabase {
             });
         });
     }
+
+    // Save a new image
+    // async saveImage(image: Image): Promise<Image> {
+    //     return new Promise((resolve, reject) => {
+    //         this.db.insert(image, (err: Error | null, newDoc: Image) => {
+    //             if (err) reject(err);
+    //             resolve(newDoc);
+    //         });
+    //     });
+    // }
+
+    // Update an existing image
+    // async updateImage(name: string, update: Partial<Image>): Promise<Image> {
+    //     return new Promise((resolve, reject) => {
+    //         this.db.update(
+    //             { name },
+    //             { $set: update },
+    //             { returnUpdatedDocs: true },
+    //             (err: Error | null, numAffected: number, affectedDocuments: Image) => {
+    //                 if (err) reject(err);
+    //                 resolve(affectedDocuments);
+    //             }
+    //         );
+    //     });
+    // }
 }
 
 export const imageDb = new ImageDatabase();

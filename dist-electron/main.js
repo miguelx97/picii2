@@ -4338,23 +4338,14 @@ class ImageDatabase {
       filename: path$3.join(process.cwd(), "data", "images.db"),
       autoload: true
     });
+    console.log("Database loaded", path$3.join(process.cwd(), "data", "images.db"));
   }
-  // Save a new image
-  async saveImage(image) {
-    return new Promise((resolve, reject) => {
-      this.db.insert(image, (err, newDoc) => {
-        if (err) reject(err);
-        resolve(newDoc);
-      });
-    });
-  }
-  // Update an existing image
-  async updateImage(name, update) {
+  async upsertImage(image) {
     return new Promise((resolve, reject) => {
       this.db.update(
-        { name },
-        { $set: update },
-        { returnUpdatedDocs: true },
+        { name: image.name },
+        image,
+        { upsert: true, returnUpdatedDocs: true },
         (err, numAffected, affectedDocuments) => {
           if (err) reject(err);
           resolve(affectedDocuments);
@@ -4364,6 +4355,10 @@ class ImageDatabase {
   }
   // Delete an image by name
   async deleteImage(name) {
+    const image = await this.findImageByName(name);
+    if (!image) {
+      return 0;
+    }
     return new Promise((resolve, reject) => {
       this.db.remove({ name }, {}, (err, n) => {
         if (err) reject(err);
@@ -4389,14 +4384,31 @@ class ImageDatabase {
       });
     });
   }
+  // Save a new image
+  // async saveImage(image: Image): Promise<Image> {
+  //     return new Promise((resolve, reject) => {
+  //         this.db.insert(image, (err: Error | null, newDoc: Image) => {
+  //             if (err) reject(err);
+  //             resolve(newDoc);
+  //         });
+  //     });
+  // }
+  // Update an existing image
+  // async updateImage(name: string, update: Partial<Image>): Promise<Image> {
+  //     return new Promise((resolve, reject) => {
+  //         this.db.update(
+  //             { name },
+  //             { $set: update },
+  //             { returnUpdatedDocs: true },
+  //             (err: Error | null, numAffected: number, affectedDocuments: Image) => {
+  //                 if (err) reject(err);
+  //                 resolve(affectedDocuments);
+  //             }
+  //         );
+  //     });
+  // }
 }
 const imageDb = new ImageDatabase();
-var ImageStatus = /* @__PURE__ */ ((ImageStatus2) => {
-  ImageStatus2["LIKE"] = "like";
-  ImageStatus2["DISLIKE"] = "dislike";
-  ImageStatus2["NONE"] = "none";
-  return ImageStatus2;
-})(ImageStatus || {});
 const getImagesFromDisk = async (dirPath) => {
   try {
     const files = await require$$1.promises.readdir(dirPath);
@@ -4419,19 +4431,9 @@ const getImagesFromDb = async () => {
     throw error;
   }
 };
-const updateImageStatus = async (name, status) => {
+const updateImageStatus = async (image) => {
   try {
-    switch (status) {
-      case ImageStatus.LIKE:
-        await imageDb.updateImage(name, { like: true });
-        break;
-      case ImageStatus.DISLIKE:
-        await imageDb.updateImage(name, { like: false });
-        break;
-      case ImageStatus.NONE:
-        await imageDb.deleteImage(name);
-        break;
-    }
+    await imageDb.upsertImage(image);
   } catch (error) {
     console.error("Error updating image status:", error);
     throw error;
@@ -4453,7 +4455,7 @@ function loadFunctions(win2) {
     win2.webContents.send("key-pressed", key);
   });
   ipcMain.handle("update-image-status", async (_2, name, status) => {
-    return updateImageStatus(name, status);
+    return updateImageStatus(name);
   });
   ipcMain.handle("get-images-from-db", async () => {
     return getImagesFromDb();

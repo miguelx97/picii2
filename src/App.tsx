@@ -1,15 +1,16 @@
 import { useImages } from "./hooks/useImages";
 import { useEffect } from "react";
-import { Keys } from "./model/keys.enum";
+import { Keys } from "./models/keys.enum";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   HeartIcon,
   XCircleIcon,
-  InformationCircleIcon,
 } from "@heroicons/react/24/solid";
 import { IconButton } from "./components/IconButton";
-import { handleKeyPress } from "./services/imagesService";
+import { handleKeyPress } from "./services/electronConnection";
+import { getImagePath } from "./models/image";
+import { ImageItem } from "./components/ImageItem";
 
 function App() {
   const imagesFolderPath = "C:\\Users\\migue\\Downloads\\test\\images";
@@ -20,6 +21,8 @@ function App() {
     handleImageSelect,
     nextImage,
     previousImage,
+    likeImage,
+    dislikeImage,
   } = useImages(imagesFolderPath);
 
   useEffect(() => {
@@ -34,10 +37,6 @@ function App() {
     return unsubscribe;
   }, [nextImage, previousImage]);
 
-  const getImagePath = (path: string, image: string) => {
-    return `file:///${path.replace(/\\/g, "/")}/${image}`;
-  };
-
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Side Panel */}
@@ -49,15 +48,12 @@ function App() {
             <div className="p-2 text-gray-500">No images found</div>
           ) : (
             images.map((image, index) => (
-              <div
+              <ImageItem
                 key={index}
-                className={`p-2 cursor-pointer hover:bg-gray-200 rounded-lg ${
-                  selectedImage === image ? "bg-gray-100" : ""
-                }`}
+                image={image}
+                isSelected={selectedImage === image}
                 onClick={() => handleImageSelect(index)}
-              >
-                <span>{image}</span>
-              </div>
+              />
             ))
           )}
         </div>
@@ -74,7 +70,7 @@ function App() {
           />
           <IconButton
             onClick={() => {
-              /* TODO: Implement like functionality */
+              likeImage(selectedImage?.name);
             }}
             icon={<HeartIcon className="h-6 w-6" />}
             title="Like"
@@ -82,7 +78,7 @@ function App() {
           />
           <IconButton
             onClick={() => {
-              /* TODO: Implement dislike functionality */
+              dislikeImage(selectedImage?.name);
             }}
             icon={<XCircleIcon className="h-6 w-6" />}
             title="Dislike"
@@ -96,7 +92,7 @@ function App() {
         {selectedImage ? (
           <div className="h-full flex items-center justify-center">
             <img
-              src={getImagePath(imagesFolderPath, selectedImage)}
+              src={getImagePath(imagesFolderPath, selectedImage.name)}
               alt="Selected"
               className="max-h-full max-w-full object-contain rounded-lg shadow-lg"
             />

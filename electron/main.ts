@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { loadFunctions } from './functions/uiConnection'
+import { loadFunctions } from './services/uiConnection'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

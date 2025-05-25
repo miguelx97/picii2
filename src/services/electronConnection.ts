@@ -1,19 +1,25 @@
+import { IpcRendererEvent } from "electron";
+import { electronPromise, electronReceive } from "./electronUtils";
+import { Image, ImageStatus } from "../models/image";
+
 export type Unsubscribe = () => void;
 
-// SEND
-export const electronSend = (channel: string, ...args: any[]) => {
-    window.ipcRenderer.send(channel, ...args);
-};
-
-// RECEIVE
-export const electronReceive = (channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void): Unsubscribe => {
-    window.ipcRenderer.on(channel, listener);
-    return () => {
-        window.ipcRenderer.off(channel, listener);
+export const handleKeyPress = (onKeyPress: (key: string) => void): Unsubscribe => {
+    const handler = (_: IpcRendererEvent, key: string) => {
+        onKeyPress(key);
     };
+    return electronReceive("key-pressed", handler);
 };
 
-// PROMISE
-export const electronPromise = async (channel: string, ...args: any[]): Promise<any> => {
-    return await window.ipcRenderer.invoke(channel, ...args);
-};
+export const getImagesFromDisk = async (dirPath: string): Promise<string[]> => {
+    return electronPromise("get-images-from-disk", dirPath);
+}
+
+export const getImagesFromDb = async (): Promise<Image[]> => {
+    return electronPromise("get-images-from-db");
+}
+
+export const updateImageStatus = async (name: string, status: ImageStatus): Promise<void> => {
+    return electronPromise("update-image-status", name, status);
+}
+
