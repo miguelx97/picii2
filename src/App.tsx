@@ -1,5 +1,5 @@
 import { useImages } from "./hooks/useImages";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Keys } from "./models/keys.enum";
 import {
   ChevronLeftIcon,
@@ -25,8 +25,30 @@ function App() {
     dislikeImage,
   } = useImages(imagesFolderPath);
 
+  // Store the latest functions in refs
+  const functionsRef = useRef({
+    nextImage,
+    previousImage,
+    likeImage,
+    dislikeImage,
+  });
+
+  // Update refs when functions change
+  useEffect(() => {
+    console.log("Updating functions");
+    functionsRef.current = {
+      nextImage,
+      previousImage,
+      likeImage,
+      dislikeImage,
+    };
+  }, [nextImage, previousImage, likeImage, dislikeImage]);
+
   useEffect(() => {
     const unsubscribe = handleKeyPress((key: string) => {
+      const { nextImage, previousImage, likeImage, dislikeImage } =
+        functionsRef.current;
+
       if (key === Keys.ArrowDown) {
         nextImage();
       } else if (key === Keys.ArrowUp) {
@@ -39,7 +61,7 @@ function App() {
     });
 
     return unsubscribe;
-  }, [nextImage, previousImage, likeImage, dislikeImage]);
+  }, []); // Empty dependency array since we're using refs
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -65,23 +87,23 @@ function App() {
           <IconButton
             onClick={previousImage}
             icon={<ChevronLeftIcon className="h-6 w-6" />}
-            title="Previous"
+            title="Previous (Arrow Up)"
           />
           <IconButton
             onClick={nextImage}
             icon={<ChevronRightIcon className="h-6 w-6" />}
-            title="Next"
+            title="Next (Arrow Down)"
           />
           <IconButton
             onClick={likeImage}
             icon={<HeartIcon className="h-6 w-6" />}
-            title="Like"
+            title="Like (Arrow Right)"
             variant="like"
           />
           <IconButton
             onClick={dislikeImage}
             icon={<XCircleIcon className="h-6 w-6" />}
-            title="Dislike"
+            title="Dislike (Arrow Left)"
             variant="dislike"
           />
         </div>

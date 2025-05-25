@@ -75,7 +75,7 @@ export const useImages = (imagesPath: string) => {
         };
 
         loadImages();
-    }, [imagesPath]);
+    }, [imageService, imagesPath]);
 
     return {
         images,
