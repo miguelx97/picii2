@@ -4455,7 +4455,11 @@ function loadFunctions(win2) {
     win2.webContents.send("key-pressed", key);
   });
   ipcMain.handle("update-image-status", async (_2, name, status) => {
-    return updateImageStatus(name);
+    const image = {
+      name,
+      like: status
+    };
+    return updateImageStatus(image);
   });
   ipcMain.handle("get-images-from-db", async () => {
     return getImagesFromDb();

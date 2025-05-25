@@ -30,11 +30,9 @@ export const useImages = (imagesPath: string) => {
         }
     };
 
-    const updateImageStatus = async (name?: string, status?: ImageStatus) => {
-        if (!name || !status) {
-            return;
-        }
+    const updateImageStatus = async (name: string, status: ImageStatus) => {
         try {
+            console.log("Updating image status:", name, status);
             await imageService.updateImageStatus(name, status);
             setImages(prevImages =>
                 prevImages.map(img =>
@@ -47,12 +45,12 @@ export const useImages = (imagesPath: string) => {
         }
     };
 
-    const likeImage = async (name?: string) => {
-        await updateImageStatus(name, ImageStatus.LIKE);
+    const likeImage = async () => {
+        await updateImageStatus(images[selectedImageIndex].name, ImageStatus.LIKE);
     };
 
-    const dislikeImage = async (name?: string) => {
-        await updateImageStatus(name, ImageStatus.DISLIKE);
+    const dislikeImage = async () => {
+        await updateImageStatus(images[selectedImageIndex].name, ImageStatus.DISLIKE);
     };
 
     useEffect(() => {

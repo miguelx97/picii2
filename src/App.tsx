@@ -31,11 +31,15 @@ function App() {
         nextImage();
       } else if (key === Keys.ArrowUp) {
         previousImage();
+      } else if (key === Keys.ArrowRight) {
+        likeImage();
+      } else if (key === Keys.ArrowLeft) {
+        dislikeImage();
       }
     });
 
     return unsubscribe;
-  }, [nextImage, previousImage]);
+  }, [nextImage, previousImage, likeImage, dislikeImage]);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -69,17 +73,13 @@ function App() {
             title="Next"
           />
           <IconButton
-            onClick={() => {
-              likeImage(selectedImage?.name);
-            }}
+            onClick={likeImage}
             icon={<HeartIcon className="h-6 w-6" />}
             title="Like"
             variant="like"
           />
           <IconButton
-            onClick={() => {
-              dislikeImage(selectedImage?.name);
-            }}
+            onClick={dislikeImage}
             icon={<XCircleIcon className="h-6 w-6" />}
             title="Dislike"
             variant="dislike"
