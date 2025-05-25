@@ -1,9 +1,38 @@
 import { useImages } from "./hooks/useImages";
+import { useEffect } from "react";
+import { Keys } from "./model/keys.enum";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  HeartIcon,
+  XCircleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/solid";
+import { IconButton } from "./components/IconButton";
+import { handleKeyPress } from "./services/imagesService";
 
 function App() {
   const imagesFolderPath = "C:\\Users\\migue\\Downloads\\test\\images";
-  const { images, selectedImage, error, handleImageSelect } =
-    useImages(imagesFolderPath);
+  const {
+    images,
+    selectedImage,
+    error,
+    handleImageSelect,
+    nextImage,
+    previousImage,
+  } = useImages(imagesFolderPath);
+
+  useEffect(() => {
+    const unsubscribe = handleKeyPress((key: string) => {
+      if (key === Keys.ArrowDown) {
+        nextImage();
+      } else if (key === Keys.ArrowUp) {
+        previousImage();
+      }
+    });
+
+    return unsubscribe;
+  }, [nextImage, previousImage]);
 
   const getImagePath = (path: string, image: string) => {
     return `file:///${path.replace(/\\/g, "/")}/${image}`;
@@ -12,11 +41,8 @@ function App() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Side Panel */}
-      <div className="w-64 bg-white shadow-lg overflow-y-auto">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold text-gray-800">Pickii</h2>
-        </div>
-        <div className="p-2">
+      <div className="w-64 bg-white shadow-lg overflow-y-auto flex flex-col">
+        <div className="p-2 flex-1">
           {error ? (
             <div className="p-2 text-red-500">{error}</div>
           ) : images.length === 0 ? (
@@ -28,12 +54,40 @@ function App() {
                 className={`p-2 cursor-pointer hover:bg-gray-200 rounded-lg ${
                   selectedImage === image ? "bg-gray-100" : ""
                 }`}
-                onClick={() => handleImageSelect(image)}
+                onClick={() => handleImageSelect(index)}
               >
                 <span>{image}</span>
               </div>
             ))
           )}
+        </div>
+        <div className="p-4 flex flex-row gap-2 justify-center">
+          <IconButton
+            onClick={previousImage}
+            icon={<ChevronLeftIcon className="h-6 w-6" />}
+            title="Previous"
+          />
+          <IconButton
+            onClick={nextImage}
+            icon={<ChevronRightIcon className="h-6 w-6" />}
+            title="Next"
+          />
+          <IconButton
+            onClick={() => {
+              /* TODO: Implement like functionality */
+            }}
+            icon={<HeartIcon className="h-6 w-6" />}
+            title="Like"
+            variant="like"
+          />
+          <IconButton
+            onClick={() => {
+              /* TODO: Implement dislike functionality */
+            }}
+            icon={<XCircleIcon className="h-6 w-6" />}
+            title="Dislike"
+            variant="dislike"
+          />
         </div>
       </div>
 

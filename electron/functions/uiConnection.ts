@@ -1,6 +1,22 @@
-import { ipcMain } from 'electron'
-import { getImages } from './images'
+import { ipcMain, BrowserWindow } from 'electron'
+import { getImagesFromDb, getImagesFromDisk, updateImageStatus } from './images'
+import { setupKeyboardLogging } from './keysHandler'
 
-ipcMain.handle('get-images', async (_, dirPath) => {
-    return getImages(dirPath);
-});
+export function loadFunctions(win: BrowserWindow) {
+    ipcMain.handle('get-images-from-disk', async (_, dirPath) => {
+        return getImagesFromDisk(dirPath);
+    });
+
+    setupKeyboardLogging(win, (key) => {
+        win.webContents.send('key-pressed', key);
+    });
+
+    ipcMain.handle('update-image-status', async (_, name, status) => {
+        return updateImageStatus(name, status);
+    });
+
+    ipcMain.handle('get-images-from-db', async () => {
+        return getImagesFromDb();
+    });
+}
+

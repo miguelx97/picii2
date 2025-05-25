@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import './functions/uiConnection'
+import { loadFunctions } from './functions/uiConnection'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -25,9 +25,20 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, 
 
 let win: BrowserWindow | null
 
+function getIcon() {
+  switch (process.platform) {
+    case 'win32':
+      return path.join(process.env.VITE_PUBLIC, 'icon.ico')
+    case 'darwin':
+      return path.join(process.env.VITE_PUBLIC, 'icon.icns')
+    default:
+      return path.join(process.env.VITE_PUBLIC, 'icon.png')
+  }
+}
+
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
+    icon: getIcon(),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),
       webSecurity: false, // Allow loading local files
@@ -35,9 +46,9 @@ function createWindow() {
   })
 
   // Test active push message to Renderer-process.
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', (new Date).toLocaleString())
-  })
+  // win.webContents.on('did-finish-load', () => {
+  //   win?.webContents.send('main-process-message', (new Date).toLocaleString())
+  // })
 
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
@@ -45,6 +56,10 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
+
+
+
+  loadFunctions(win);
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common

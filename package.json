@@ -10,12 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/vite": "^4.1.7",
+    "nedb": "^1.8.0",
+    "node-exiftool": "^2.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {
+    "@types/nedb": "^1.8.16",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
     "@typescript-eslint/eslint-plugin": "^7.1.1",
